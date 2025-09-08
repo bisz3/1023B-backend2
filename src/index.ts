@@ -4,8 +4,10 @@ import 'dotenv/config'
 
 const app = express()
 
+app.use(express.json()) // <-- Adicione esta linha
+
 app.get('/', async (req, res) => {
-    if (!process.env.DBHOST) {
+    if (process.env.DBHOST=== undefined) {
         res.status(500).send("DBHOST não está definido nas variáveis de ambiente");
         return;
     }
@@ -25,17 +27,43 @@ app.get('/', async (req, res) => {
         res.status(500).send("DBPORT não está definido nas variáveis de ambiente");
         return;
     }
+
     try {
         const conn = await mysql.createConnection({
-            host: process.env.DBHOST,
-            user: process.env.DBUSER,
-            password: process.env.DBPASSWORD,
-            database: process.env.DBDATABASE,
-            port: Number(process.env.DBPORT)
+            host: process.env.DBHOST!,
+            user: process.env.DBUSER!,
+            password: process.env.DBPASSWORD!,
+            database: process.env.DBDATABASE!,
+            port: Number(process.env.DBPORT!)
         });
         res.send("Conexão bem sucedida!");
     } catch (err) {
-        res.status(500).send("Erro ao conectar ao banco de dados: " + err);
+        if (err instanceof Error === false) {
+            res.status(500).send("Erro desconhecido ao conectar ao banco de dados");
+            return;
+        }
+        res.status(500).send("Erro ao conectar ao banco de dados: " + err.message);
+    }
+});
+
+app.get('/produtos', async (req, res) => {
+    try {
+        const conn = await mysql.createConnection({
+            host: process.env.DBHOST!,
+            user: process.env.DBUSER!,
+            password: process.env.DBPASSWORD!,
+            database: process.env.DBDATABASE!,
+            port: Number(process.env.DBPORT!)
+        });
+
+        const [rows] = await conn.execute('SELECT * FROM produtos');
+        res.json(rows); // <-- Adicione esta linha para retornar os dados
+    } catch (err) {
+        if (err instanceof Error === false) {
+            res.status(500).send("Erro desconhecido ao conectar ao banco de dados");
+            return;
+        }
+        res.status(500).send("Erro ao conectar ao banco de dados: " + err.message);
     }
 });
 
