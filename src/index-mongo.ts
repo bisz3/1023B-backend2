@@ -4,7 +4,7 @@ import mongoose, { MongoClient } from 'mongodb'
 
 const client = new mongoose.MongoClient(process.env.MONGO_URI!)
 await client.connect()
-const db = client.db(process.env.mongo_db)                                                  
+const db = client.db(process.env.MONGO_DB)
 const app = express()
 
 app.get('/produtos', async (req:Request, res: Response) => {
